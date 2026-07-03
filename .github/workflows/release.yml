@@ -1,0 +1,45 @@
+name: Release 3DS
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install devkitPro
+        uses: devkitPro/install-devkitpro-action@v1
+        with:
+          pacman: |
+            3ds-dev
+            bannertool
+            tex3ds
+
+      - name: Build
+        run: make
+
+      - name: Generate icon
+        run: |
+          tex3ds -i assets/icon.png -o icon.icn
+
+      - name: Generate banner
+        run: |
+          bannertool makebanner \
+            -i assets/banner.png \
+            -a assets/audio.wav \
+            -o banner.bnr
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            *.3dsx
+            *.elf
+            icon.icn
+            banner.bnr
